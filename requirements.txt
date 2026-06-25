@@ -1,0 +1,2 @@
+psychopy>=2024.2
+Pillow>=10

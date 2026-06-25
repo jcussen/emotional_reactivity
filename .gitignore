@@ -1,0 +1,27 @@
+# Local Python/PsychoPy state
+/.conda_env/
+/.home/
+__pycache__/
+*.py[cod]
+
+# macOS / editor local files
+.DS_Store
+/.idea/
+
+# Private NimStim files. These must never be committed or made public.
+/NimStim.zip
+/NimStim/
+/resources/NimStim.zip
+/resources/NimStim/
+/resources/faces/
+
+# Generated from private NimStim images.
+/stimuli_generated/
+/conditions/*.csv
+
+# Runtime outputs.
+/data/
+/logs/
+
+# Old pre-flattened folder name.
+/psychopy_masked_faces/
