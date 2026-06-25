@@ -3,6 +3,5 @@ channels:
 dependencies:
   - python=3.10
   - pip
-  - pillow>=10
   - pip:
       - psychopy>=2024.2

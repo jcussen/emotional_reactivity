@@ -9,8 +9,6 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from PIL import Image
-
 import config
 
 
@@ -137,7 +135,7 @@ def load_trials(path: Path) -> list[dict[str, str]]:
     if not path.exists():
         raise SystemExit(
             f"Condition file not found: {path}\n"
-            "Run build_stimuli.py before starting the experiment."
+            "Make sure conditions/trial_sequence.csv is present."
         )
 
     with path.open(newline="", encoding="utf-8") as handle:
@@ -159,11 +157,20 @@ def load_trials(path: Path) -> list[dict[str, str]]:
     missing_files = []
     for row in rows:
         for key in ("target_image_path", "mask_image_path"):
-            if not Path(row[key]).exists():
-                missing_files.append(row[key])
+            stimulus_path = Path(row[key]).expanduser()
+            if not stimulus_path.is_absolute():
+                stimulus_path = config.PROJECT_ROOT / stimulus_path
+            stimulus_path = stimulus_path.resolve()
+            if not stimulus_path.exists():
+                missing_files.append(str(stimulus_path))
+            row[key] = str(stimulus_path)
     if missing_files:
         preview = "\n".join(missing_files[:10])
-        raise SystemExit(f"Missing stimulus image files:\n{preview}")
+        raise SystemExit(
+            "Missing stimulus image files. Unzip NimStim_ER.zip and move the "
+            "NimStim_ER folder into resources/.\n"
+            f"{preview}"
+        )
 
     return rows
 
@@ -184,13 +191,6 @@ def data_path(participant_id: str, session: str) -> Path:
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return config.DATA_DIR / f"sub-{participant_id}_ses-{session}_{timestamp}.csv"
-
-
-def image_size_for_height(image_path: str, face_height: float) -> tuple[float, float]:
-    with Image.open(image_path) as image:
-        width, height = image.size
-    aspect = width / height
-    return (face_height * aspect, face_height)
 
 
 def frame_counts_for_timings(win, timings: dict[str, float], assumed_frame_rate: float):
@@ -473,8 +473,8 @@ def run_experiment(args) -> int:
                 mask_path = trial["mask_image_path"]
                 target_stim.image = target_path
                 mask_stim.image = mask_path
-                target_stim.size = image_size_for_height(target_path, config.FACE_HEIGHT)
-                mask_stim.size = image_size_for_height(mask_path, config.FACE_HEIGHT)
+                target_stim.size = config.FACE_SIZE
+                mask_stim.size = config.FACE_SIZE
 
                 fixation_onset = draw_for_frames(
                     win, run_clock, [fixation], frame_counts["fixation"]
@@ -569,7 +569,7 @@ def main() -> int:
         "--conditions",
         type=Path,
         default=config.TRIAL_SEQUENCE_CSV,
-        help="CSV trial sequence created by build_stimuli.py.",
+        help="CSV trial sequence included with the repository.",
     )
     parser.add_argument("--windowed", action="store_true", help="Use a windowed display.")
     parser.add_argument("--participant", default=None, help="Participant ID override.")
@@ -596,7 +596,7 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except ImportError as exc:
         print(
-            "Missing experiment dependency. Install PsychoPy and Pillow with "
+            "Missing experiment dependency. Install PsychoPy with "
             "`python -m pip install -r requirements.txt`.",
             file=sys.stderr,
         )

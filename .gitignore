@@ -10,14 +10,17 @@ __pycache__/
 
 # Private NimStim files. These must never be committed or made public.
 /NimStim.zip
+/NimStim_ER.zip
 /NimStim/
+/NimStim_ER/
 /resources/NimStim.zip
+/resources/NimStim_ER.zip
 /resources/NimStim/
+/resources/NimStim_ER/
 /resources/faces/
 
-# Generated from private NimStim images.
+# Generated/private image outputs are not part of the repository.
 /stimuli_generated/
-/conditions/*.csv
 
 # Runtime outputs.
 /data/
